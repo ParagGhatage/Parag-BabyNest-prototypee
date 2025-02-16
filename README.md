@@ -64,8 +64,7 @@ pregnancy-tracker-app/
 
 ## **📊 Workflow Diagram**
 
-```mermaid
-graph TD;
+```
     A[User Input] -->|Enters Data| B[React Native UI]
     B -->|Processes Locally| C[Local AI (Llama.cpp)]
     C -->|Retrieves Similar Queries| D[Vector Database (Qdrant)]
