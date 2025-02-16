@@ -1,87 +1,153 @@
-# Opposing-Perspectives-AI Backend Architecture
+# Pregnancy Tracking App - Architecture & Workflow
 
-## Overview
-The backend of Opposing-Perspectives-AI is designed to process articles and generate opposing perspectives efficiently. The system consists of multiple interconnected components, ensuring scalability, modularity, and extensibility.
+## 📌 Overview
+This document outlines the **architecture, repository structure, and workflow** of a pregnancy tracking app built with **React Native** for frontend and on-device AI processing.
 
-## Architecture
+### **Key Features**
+- **Pregnancy Tracking**: Weekly updates on baby growth, milestones
+- **Appointments & Reminders**: Local storage & push notifications
+- **Offline Chatbot**: Llama.cpp-based AI assistant for pregnancy queries
+- **On-Device Processing**: No cloud dependency, everything runs locally
+- **Vector Database for FAQs**: Efficient retrieval of pregnancy-related information
 
-### Components:
-1. **Scraping Agent**
-   - Fetches article content from the provided URL.
-   - Uses web scraping and APIs to extract text.
-   - Cleans and structures the data for further processing.
+---
 
-2. **Summarizer**
-   - Processes raw content and extracts key information.
-   - Uses NLP-based summarization techniques.
-   - Outputs structured summaries for argument extraction.
+## **🛠️ Architecture**
 
-3. **LangChain Processing Layer**
-   - Extracts key arguments and perspectives from the summarized content.
-   - Uses prompt engineering and embedding models.
-   - Implements retrieval-augmented generation (RAG) for contextual understanding.
+```
+Frontend (React Native)
+├── UI Components (Pregnancy Tracker, Calendar, Chatbot)
+├── Local Storage (SQLite/MMKV for user data)
+├── AI Processing (Llama.cpp for offline chatbot)
+├── Vector Database (Qdrant/FAISS for pregnancy FAQs)
+└── Notification System (Push notifications for reminders)
+```
 
-4. **LangGraph-Based Workflow**
-   - Defines dynamic execution flows for AI reasoning and argument generation.
-   - Supports modular expansion with new reasoning strategies.
-   - Ensures smooth integration with LangChain and CoT modules.
+### **Data Flow**
 
-5. **Chain-of-Thought (CoT) Reasoning**
-   - Implements structured reasoning for generating counter-perspectives.
-   - Uses multi-step logical evaluation.
-   - Enhances argument generation by verifying consistency.
+```
+[User Input]
+      ↓
+[React Native UI]
+      ↓
+[Local AI (Chatbot + NLP)]
+      ↓
+[Vector Database (Pregnancy FAQs)]
+      ↓
+[SQLite/MMKV (User Data + Appointments)]
+      ↓
+[Notification System (Reminders)]
+```
 
-6. **API Layer**
-   - Exposes endpoints for frontend interaction.
-   - Manages requests and responses efficiently.
-   - Ensures authentication, rate limiting, and logging.
+---
 
-## Workflow Diagram
+## **📂 Repository Structure**
+```
+pregnancy-tracker-app/
+├── src/
+│   ├── components/        # UI components (calendar, chatbot UI)
+│   ├── screens/           # Screens (Home, Chat, Appointments)
+│   ├── storage/           # Local Storage (SQLite/MMKV)
+│   ├── ai/                # AI processing
+│   │   ├── chatbot/       # LLM-based chatbot
+│   │   ├── vector_db/     # Vector storage (Qdrant/FAISS)
+│   │   ├── nlp/           # NLP tokenization, embeddings
+│   ├── utils/             # Helper functions
+│   ├── notifications/     # Appointment reminders
+├── android/               # Android config
+├── ios/                   # iOS config
+├── package.json           # Dependencies
+└── App.js                 # Main entry file
+```
+
+---
+
+## **📊 Workflow Diagram**
 
 ```mermaid
 graph TD;
-    A[User Inputs Article URL] -->|Scrape Content| B[Scraping Agent];
-    B -->|Extract Content| C[Summarizer];
-    C -->|Summarized Data| D[LangChain Processing];
-    D -->|Generate Arguments| E[LangGraph Workflow];
-    E -->|CoT Reasoning| F[Generate Opposing Perspective];
-    F -->|API Response| G[Frontend Display];
+    A[User Input] -->|Enters Data| B[React Native UI]
+    B -->|Processes Locally| C[Local AI (Llama.cpp)]
+    C -->|Retrieves Similar Queries| D[Vector Database (Qdrant)]
+    D -->|Returns Relevant Info| C
+    C -->|Generates Response| B
+    B -->|Stores Data| E[SQLite/MMKV]
+    B -->|Schedules Notifications| F[Push Notifications]
+    E -->|Fetches Data| B
+    F -->|Sends Reminder| A
 ```
 
-## Repository Structure
+---
 
+## **🔹 Feature Breakdown**
+
+### **1️⃣ Pregnancy Tracking**
+- Track weeks, milestones, baby growth
+- Data stored locally using SQLite/MMKV
+
+```sql
+CREATE TABLE pregnancy_data (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT,
+  week INTEGER,
+  milestone TEXT,
+  tips TEXT
+);
 ```
-project-root/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                # FastAPI app instance & server startup
-│   ├── api/
-│   │   ├── __init__.py
-│   │   └── routes.py          # API endpoints (input handling, response generation)
-│   ├── core/
-│   │   ├── __init__.py
-│   │   └── config.py          # Configuration settings (e.g., Hugging Face API token)
-│   ├── models/
-│   │   ├── __init__.py
-│   │   └── schemas.py         # Pydantic models for request/response validation
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── article_extractor.py   # Fetches, parses & cleans article content using BeautifulSoup
-│   │   ├── agent_summarization.py # Summarization agent using LangChain
-│   │   ├── agent_analysis.py      # Analysis agent to extract key arguments and assumptions
-│   │   ├── agent_counter.py       # Counter-perspective agent generating the opposite view
-│   │   └── llm_integration.py     # Integration of Hugging Face Inference API with LangChain
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   └── helpers.py         # Utility functions (logging, error handling, etc.)
-├── tests/
-│   ├── __init__.py
-│   ├── test_article_extractor.py  # Unit tests for article extraction logic
-│   ├── test_agents.py             # Tests for summarization, analysis & counter agents
-│   ├── test_routes.py             # Tests for FastAPI routes/endpoints
-│   └── test_llm_integration.py    # Tests for the Hugging Face API integration
-├── requirements.txt           # Project dependencies (FastAPI, LangChain, BeautifulSoup, etc.)
-├── README.md                  # Project documentation & setup instructions
-└── .env                       # Environment variables (e.g., Hugging Face API token)
+
+---
+
+### **2️⃣ Appointment & Reminders**
+- Local storage of doctor appointments
+- Push notifications for reminders
+
+```javascript
+import PushNotification from 'react-native-push-notification';
+
+export const scheduleReminder = (title, message, date) => {
+  PushNotification.localNotificationSchedule({
+    title,
+    message,
+    date,
+    allowWhileIdle: true,
+  });
+};
 ```
+
+---
+
+### **3️⃣ Chatbot (Offline AI)**
+- Uses **llama.cpp** for AI processing
+- Runs locally without internet
+
+```javascript
+import { exec } from 'react-native-llama-cpp';
+
+export const runPregnancyBot = async (question) => {
+  const response = await exec(`You are a pregnancy assistant. Answer: ${question}`);
+  return response;
+};
+```
+
+---
+
+### **4️⃣ Vector Database for FAQs**
+- Stores embeddings of pregnancy FAQs
+- Retrieves similar questions before calling LLM
+
+```javascript
+import { QdrantClient } from 'qdrant-client';
+
+const qdrant = new QdrantClient({ url: 'http://localhost:6333' });
+
+export const searchPregnancyFAQ = async (queryVector) => {
+  return await qdrant.search({
+    collection_name: 'pregnancy_faqs',
+    vector: queryVector,
+    limit: 1
+  });
+};
+```
+
+---
 
