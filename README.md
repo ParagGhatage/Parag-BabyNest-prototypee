@@ -1,4 +1,4 @@
-# Pregnancy Tracking App - Architecture & Workflow
+# BabyNest App - Architecture & Workflow
 
 ## 📌 Overview
 This document outlines the **architecture, repository structure, and workflow** of a pregnancy tracking app built with **React Native** for frontend and on-device AI processing.
